@@ -45,6 +45,14 @@ client.connect(err => {
     })
 })
 
+  app.get('/searchProducts/:pName', (req, res) => {
+    const pName = req.params.pName;
+    productCollection.find({pName: new RegExp(pName, 'i')})
+    .toArray( (err, documents) => {
+        res.send(documents);
+    })
+})
+
   app.post('/addProduct', (req, res) => {
       const product = req.body;
       productCollection.insertOne(product)
@@ -68,8 +76,24 @@ client.connect(err => {
     })
   })
 
+  app.delete('/deleteOrder/:id', (req, res) => {
+    orderCollection.deleteOne({_id: ObjectId(req.params.id)})
+    .then(result => {
+      res.send(result.deletedCount > 0);
+    })
+  })
+
+  app.patch('/updateProduct/:id', (req, res) => {
+    productCollection.updateOne({_id: ObjectId(req.params.id)},
+    {
+        $set: {pName: req.body.pName, weight: req.body.weight, price: req.body.price}
+    })
+    .then(result => {
+        res.send(result.modifiedCount > 0);
+    })
+  });
 
 //   client.close();
 });
 
-app.listen(port);
+app.listen(process.env.PORT || port);
